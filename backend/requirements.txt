@@ -1,0 +1,14 @@
+fastapi[standard]>=0.115.0
+uvicorn>=0.32.0
+pydantic>=2.10.0
+pydantic-settings>=2.0.0
+sqlalchemy[asyncio]>=2.0.0
+alembic>=1.14.0
+asyncpg>=0.29.0
+bcrypt>=4.2.0
+python-jose[cryptography]>=3.3.0
+fastapi-nextauth-jwt>=0.1.0
+httpx>=0.28.0
+redis>=5.0.0
+resend>=2.0.0
+structlog>=24.0.0
