@@ -7,6 +7,7 @@ from sqlalchemy import text
 
 from app.auth.router import router as auth_router
 from app.common.exceptions import register_exception_handlers
+from app.users.router import router as users_router
 from app.config import settings
 from app.database import engine
 
@@ -49,6 +50,7 @@ register_exception_handlers(app)
 
 # Include routers
 app.include_router(auth_router)
+app.include_router(users_router)
 
 
 @app.get("/api/v1/health")

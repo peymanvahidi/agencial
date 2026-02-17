@@ -11,6 +11,8 @@ import { TopNav } from "@/components/layout/top-nav";
 import { LeftSidebar } from "@/components/layout/left-sidebar";
 import { RightSidebar } from "@/components/layout/right-sidebar";
 import { useUIStore } from "@/stores/ui-store";
+import { useUserStore } from "@/stores/user-store";
+import { Loader2 } from "lucide-react";
 
 const LEFT_COLLAPSED_SIZE = 4;
 const RIGHT_COLLAPSED_SIZE = 4;
@@ -30,11 +32,18 @@ export default function DashboardLayout({
     setRightSidebarCollapsed,
   } = useUIStore();
 
+  const { isLoaded: preferencesLoaded, fetchPreferences } = useUserStore();
+
   // Hydration guard: avoid SSR mismatch with persisted Zustand state
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => {
     setHydrated(true);
   }, []);
+
+  // Load user preferences from backend on mount
+  useEffect(() => {
+    fetchPreferences();
+  }, [fetchPreferences]);
 
   // Track collapse state via onResize callback (v4 API has no onCollapse/onExpand)
   const handleLeftResize = useCallback(
@@ -78,6 +87,15 @@ export default function DashboardLayout({
       }
     }
   }, [rightSidebarCollapsed, hydrated]);
+
+  // Show loading state while preferences are being fetched to prevent theme flash
+  if (!preferencesLoaded) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-brand" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
