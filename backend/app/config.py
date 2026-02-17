@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     RESEND_API_KEY: str = ""
     EMAIL_FROM: str = "noreply@agencial.dev"
     BACKEND_URL: str = "http://localhost:8000"
+    FRONTEND_URL: str = "http://localhost:3000"
     CORS_ORIGINS: list[str] = ["http://localhost:3000"]
 
     model_config = {

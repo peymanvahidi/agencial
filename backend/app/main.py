@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
+from app.auth.router import router as auth_router
 from app.common.exceptions import register_exception_handlers
 from app.config import settings
 from app.database import engine
@@ -45,6 +46,9 @@ app.add_middleware(
 
 # Register custom exception handlers
 register_exception_handlers(app)
+
+# Include routers
+app.include_router(auth_router)
 
 
 @app.get("/api/v1/health")
