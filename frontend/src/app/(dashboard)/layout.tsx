@@ -14,8 +14,10 @@ import { useUIStore } from "@/stores/ui-store";
 import { useUserStore } from "@/stores/user-store";
 import { Loader2 } from "lucide-react";
 
-const LEFT_COLLAPSED_SIZE = 4;
-const RIGHT_COLLAPSED_SIZE = 4;
+const LEFT_COLLAPSED_PCT = "4%";
+const RIGHT_COLLAPSED_PCT = "4%";
+const LEFT_COLLAPSED_THRESHOLD = 4; // percentage threshold for onResize detection
+const RIGHT_COLLAPSED_THRESHOLD = 4;
 
 export default function DashboardLayout({
   children,
@@ -36,8 +38,18 @@ export default function DashboardLayout({
 
   // Hydration guard: avoid SSR mismatch with persisted Zustand state
   const [hydrated, setHydrated] = useState(false);
+  // Guard to prevent onResize from writing collapsed state during initial mount.
+  // The ResizeObserver may fire with a zero/small size before layout is complete,
+  // which would incorrectly persist collapsed: true in Zustand.
+  const panelsMountedRef = useRef(false);
+
   useEffect(() => {
     setHydrated(true);
+    // Allow onResize to update collapse state only after the first paint
+    // (requestAnimationFrame ensures layout has been computed)
+    requestAnimationFrame(() => {
+      panelsMountedRef.current = true;
+    });
   }, []);
 
   // Load user preferences from backend on mount
@@ -48,7 +60,8 @@ export default function DashboardLayout({
   // Track collapse state via onResize callback (v4 API has no onCollapse/onExpand)
   const handleLeftResize = useCallback(
     (size: { asPercentage: number }) => {
-      const collapsed = size.asPercentage <= LEFT_COLLAPSED_SIZE;
+      if (!panelsMountedRef.current) return;
+      const collapsed = size.asPercentage <= LEFT_COLLAPSED_THRESHOLD;
       setLeftSidebarCollapsed(collapsed);
     },
     [setLeftSidebarCollapsed],
@@ -56,7 +69,8 @@ export default function DashboardLayout({
 
   const handleRightResize = useCallback(
     (size: { asPercentage: number }) => {
-      const collapsed = size.asPercentage <= RIGHT_COLLAPSED_SIZE;
+      if (!panelsMountedRef.current) return;
+      const collapsed = size.asPercentage <= RIGHT_COLLAPSED_THRESHOLD;
       setRightSidebarCollapsed(collapsed);
     },
     [setRightSidebarCollapsed],
@@ -105,11 +119,11 @@ export default function DashboardLayout({
         <ResizablePanel
           panelRef={leftPanelRef}
           id="left-sidebar"
-          defaultSize={15}
-          minSize={4}
-          maxSize={25}
+          defaultSize="15%"
+          minSize="4%"
+          maxSize="25%"
           collapsible
-          collapsedSize={LEFT_COLLAPSED_SIZE}
+          collapsedSize={LEFT_COLLAPSED_PCT}
           onResize={handleLeftResize}
         >
           <LeftSidebar />
@@ -118,7 +132,7 @@ export default function DashboardLayout({
         <ResizableHandle withHandle />
 
         {/* Main content panel */}
-        <ResizablePanel id="main-content" defaultSize={70} minSize={40}>
+        <ResizablePanel id="main-content" defaultSize="70%" minSize="40%">
           <main className="h-full overflow-auto">{children}</main>
         </ResizablePanel>
 
@@ -128,11 +142,11 @@ export default function DashboardLayout({
         <ResizablePanel
           panelRef={rightPanelRef}
           id="right-sidebar"
-          defaultSize={15}
-          minSize={4}
-          maxSize={30}
+          defaultSize="15%"
+          minSize="4%"
+          maxSize="30%"
           collapsible
-          collapsedSize={RIGHT_COLLAPSED_SIZE}
+          collapsedSize={RIGHT_COLLAPSED_PCT}
           onResize={handleRightResize}
         >
           <RightSidebar />
