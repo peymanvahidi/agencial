@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 1 of 8 (Foundation and Authentication)
-Plan: 2 of 3 in current phase
-Status: Executing
-Last activity: 2026-02-17 -- Plan 01-02 complete (authentication system)
+Plan: 3 of 3 in current phase
+Status: Complete (verified with Playwright screenshots + bug fixes + proxy fix)
+Last activity: 2026-02-17 -- Phase 01 complete (all 3 plans + 7 bug fixes verified)
 
-Progress: [▓▓░░░░░░░░] 8%
+Progress: [▓▓▓░░░░░░░] 12%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2
-- Average duration: 7min
-- Total execution time: 0.23 hours
+- Total plans completed: 3
+- Average duration: 7.3min
+- Total execution time: 0.37 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-foundation | 2 | 14min | 7min |
+| 01-foundation | 3 | 22min | 7.3min |
 
 **Recent Trend:**
-- Last 5 plans: 8min, 6min
-- Trend: improving
+- Last 5 plans: 8min, 6min, 9min
+- Trend: stable
 
 *Updated after each plan completion*
 
@@ -53,6 +53,11 @@ Recent decisions affecting current work:
 - [01-02]: Email service dev-mode console fallback when RESEND_API_KEY not configured
 - [01-02]: Forgot password always returns success to prevent email enumeration
 - [01-02]: Split auth.config.ts (Edge) and src/auth.ts (Node) to avoid Edge runtime issues
+- [01-03]: Three-panel layout with react-resizable-panels needs percentage strings (not numbers) in v4
+- [01-03]: Backend config.py must load env from project root (parent dir) not just CWD
+- [01-03]: frontend/.env.local required for Auth.js vars (gitignored, created from .env.example)
+- [01-03]: proxy.ts (or middleware.ts) MUST be in src/ when using src/app/ directory -- root-level file compiles but never executes due to Watchpack watcher path resolution
+- [01-03]: Next.js 16 renames middleware.ts → proxy.ts; export must be `export const proxy = ...`
 
 ### Pending Todos
 
@@ -65,6 +70,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-17
-Stopped at: Completed 01-02-PLAN.md (authentication system)
-Resume file: .planning/phases/01-foundation-and-authentication/01-02-SUMMARY.md
+Last session: 2026-02-18
+Stopped at: Phase 01 complete -- all 3 plans executed, all 3 SUMMARY.md files created
+Resume file: None -- Phase 01 fully complete, ready for Phase 02 planning
+Note: proxy.ts moved from project root to src/proxy.ts to fix auth redirect not working
