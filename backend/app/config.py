@@ -1,3 +1,4 @@
+from pydantic import model_validator
 from pydantic_settings import BaseSettings
 
 
@@ -10,6 +11,13 @@ class Settings(BaseSettings):
     """
 
     DATABASE_URL: str = "postgresql+asyncpg://agencial:agencial_dev@localhost:5432/agencial"
+
+    @model_validator(mode="after")
+    def fix_database_url_scheme(self) -> "Settings":
+        """Railway provides postgresql:// but asyncpg needs postgresql+asyncpg://."""
+        if self.DATABASE_URL.startswith("postgresql://"):
+            self.DATABASE_URL = self.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return self
     REDIS_URL: str = "redis://localhost:6379"
     NEXTAUTH_SECRET: str = ""
     RESEND_API_KEY: str = ""
