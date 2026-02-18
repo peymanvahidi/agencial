@@ -1,14 +1,17 @@
-import { auth } from "@/auth";
+import NextAuth from "next-auth";
+import authConfig from "../auth.config";
 import { NextResponse } from "next/server";
 
+const { auth } = NextAuth(authConfig);
+
 /**
- * Route protection middleware using Auth.js v5.
+ * Route protection proxy using Auth.js v5.
  *
  * - Unauthenticated users are redirected to /login
  * - Authenticated users on /login are redirected to / (dashboard)
  * - Public routes: /login, /verify-email, /reset-password, /api/auth/*
  */
-export default auth((req) => {
+export const proxy = auth((req) => {
   const isLoggedIn = !!req.auth;
   const { pathname } = req.nextUrl;
 
