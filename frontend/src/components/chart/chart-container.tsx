@@ -179,57 +179,66 @@ export function ChartContainer() {
         // Turning off -- clear points
         setMeasureA(null);
         setMeasureB(null);
+        measureFinalizedRef.current = false;
       }
       return !prev;
     });
   }, []);
 
   // ---------------------------------------------------------------------------
-  // Measurement click handler on chart canvas wrapper
+  // Measurement: two-click with live preview on mousemove
   // ---------------------------------------------------------------------------
 
-  const handleCanvasClick = useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
-      if (!measureActive) return;
+  const measureFinalizedRef = useRef(false);
 
+  const getMeasurePoint = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>): MeasurePoint | null => {
       const chart = chartRef.current;
       const series = mainSeriesRef.current;
-      if (!chart || !series) return;
-
       const wrapper = canvasWrapperRef.current;
-      if (!wrapper) return;
+      if (!chart || !series || !wrapper) return null;
 
       const rect = wrapper.getBoundingClientRect();
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;
 
-      // Convert pixel coordinates to price/time
       const timeCoord = chart.timeScale().coordinateToTime(x);
       const priceCoord = series.coordinateToPrice(y);
+      if (timeCoord === null || priceCoord === null) return null;
 
-      if (timeCoord === null || priceCoord === null) return;
+      return { x, y, price: priceCoord, time: timeCoord as number };
+    },
+    [chartRef],
+  );
 
-      const point: MeasurePoint = {
-        x,
-        y,
-        price: priceCoord,
-        time: timeCoord as number,
-      };
+  const handleCanvasClick = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      if (!measureActive) return;
+      const point = getMeasurePoint(event);
+      if (!point) return;
 
-      if (!measureA) {
-        // First click -- set point A
+      if (!measureA || measureFinalizedRef.current) {
+        // First click (or restart after finalized) -- set point A
         setMeasureA(point);
         setMeasureB(null);
-      } else if (!measureB) {
-        // Second click -- set point B
-        setMeasureB(point);
+        measureFinalizedRef.current = false;
       } else {
-        // Third click -- clear and start over
-        setMeasureA(point);
-        setMeasureB(null);
+        // Second click -- finalize point B
+        setMeasureB(point);
+        measureFinalizedRef.current = true;
       }
     },
-    [measureActive, chartRef, measureA, measureB],
+    [measureActive, getMeasurePoint, measureA],
+  );
+
+  const handleCanvasMouseMove = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      if (!measureActive || !measureA || measureFinalizedRef.current) return;
+      const point = getMeasurePoint(event);
+      if (!point) return;
+      setMeasureB(point);
+    },
+    [measureActive, measureA, getMeasurePoint],
   );
 
   // Clear measurement on Escape
@@ -239,6 +248,7 @@ export function ChartContainer() {
         setMeasureActive(false);
         setMeasureA(null);
         setMeasureB(null);
+        measureFinalizedRef.current = false;
         return;
       }
 
@@ -356,6 +366,7 @@ export function ChartContainer() {
         <div
           className="relative flex-1"
           onClick={handleCanvasClick}
+          onMouseMove={handleCanvasMouseMove}
           style={{
             cursor: measureActive ? "crosshair" : undefined,
           }}
