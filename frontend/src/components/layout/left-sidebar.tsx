@@ -13,10 +13,11 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { WatchlistPanel } from "@/components/watchlist/watchlist-panel";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/" },
-  { icon: BarChart3, label: "Chart", href: "#", disabled: true },
+  { icon: BarChart3, label: "Chart", href: "/" },
   { icon: BookOpen, label: "Journal", href: "#", disabled: true },
   { icon: TrendingUp, label: "Analytics", href: "#", disabled: true },
 ];
@@ -28,7 +29,7 @@ export function LeftSidebar() {
   return (
     <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
       {/* Navigation items */}
-      <nav className="flex-1 space-y-1 p-2">
+      <nav className="space-y-1 p-2">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
@@ -55,6 +56,16 @@ export function LeftSidebar() {
           );
         })}
       </nav>
+
+      {/* Separator between nav and watchlist */}
+      <div className="border-t border-border" />
+
+      {/* Watchlist panel (hidden when collapsed) */}
+      {!leftSidebarCollapsed && (
+        <div className="flex-1 overflow-y-auto">
+          <WatchlistPanel />
+        </div>
+      )}
 
       {/* Collapse toggle */}
       <div className="border-t border-border p-2">
