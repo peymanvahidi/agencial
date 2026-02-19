@@ -64,15 +64,19 @@ async def send_verification_email(
     </html>
     """
 
-    resend.Emails.send(
-        {
-            "from": settings.EMAIL_FROM,
-            "to": [to],
-            "subject": "Verify your Agencial account",
-            "html": html_body,
-        }
-    )
-    logger.info("verification_email_sent", to=to)
+    try:
+        resend.Emails.send(
+            {
+                "from": settings.EMAIL_FROM,
+                "to": [to],
+                "subject": "Verify your Agencial account",
+                "html": html_body,
+            }
+        )
+        logger.info("verification_email_sent", to=to)
+    except Exception as exc:
+        logger.warning("verification_email_failed", to=to, error=str(exc))
+        # Don't block registration if email fails (user can re-request)
 
 
 async def send_reset_email(to: str, token: str, base_url: str) -> None:
@@ -124,12 +128,15 @@ async def send_reset_email(to: str, token: str, base_url: str) -> None:
     </html>
     """
 
-    resend.Emails.send(
-        {
-            "from": settings.EMAIL_FROM,
-            "to": [to],
-            "subject": "Reset your Agencial password",
-            "html": html_body,
-        }
-    )
-    logger.info("reset_email_sent", to=to)
+    try:
+        resend.Emails.send(
+            {
+                "from": settings.EMAIL_FROM,
+                "to": [to],
+                "subject": "Reset your Agencial password",
+                "html": html_body,
+            }
+        )
+        logger.info("reset_email_sent", to=to)
+    except Exception as exc:
+        logger.warning("reset_email_failed", to=to, error=str(exc))

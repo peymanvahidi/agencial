@@ -8,7 +8,14 @@ from app.config import settings
 
 logger = structlog.get_logger()
 
-JWT = NextAuthJWT(secret=settings.NEXTAUTH_SECRET)
+JWT = NextAuthJWT(
+    secret=settings.NEXTAUTH_SECRET,
+    # Auth.js on HTTPS (Vercel) prefixes cookies with __Secure-, which also
+    # changes the salt used for key derivation. Match that based on FRONTEND_URL.
+    secure_cookie=settings.FRONTEND_URL.startswith("https://"),
+    # CSRF is handled at the Next.js proxy layer (same-origin requests).
+    csrf_prevention_enabled=False,
+)
 
 
 async def get_current_user(

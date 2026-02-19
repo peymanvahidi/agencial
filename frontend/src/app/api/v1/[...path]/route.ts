@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
+// Route handlers run server-side — use BACKEND_URL (same as auth.ts)
+// with NEXT_PUBLIC_BACKEND_URL as fallback for compatibility.
 const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+  process.env.BACKEND_URL ||
+  process.env.NEXT_PUBLIC_BACKEND_URL ||
+  "http://localhost:8000";
 
 async function proxyRequest(
   request: NextRequest,
