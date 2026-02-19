@@ -1,5 +1,7 @@
-const BASE_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+// Use relative URLs so requests go through Next.js rewrites (next.config.ts),
+// which proxy /api/v1/* to the backend. This ensures the Auth.js session cookie
+// is forwarded — direct cross-origin requests lose it in production.
+const BASE_URL = "";
 
 class ApiError extends Error {
   constructor(

@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from fastapi_nextauth_jwt.exceptions import MissingTokenError, InvalidTokenError
 
 
 class NotFoundError(Exception):
@@ -52,3 +53,15 @@ def register_exception_handlers(app: FastAPI) -> None:
         request: Request, exc: ForbiddenError
     ) -> JSONResponse:
         return JSONResponse(status_code=403, content={"detail": exc.detail})
+
+    @app.exception_handler(MissingTokenError)
+    async def missing_token_handler(
+        request: Request, exc: MissingTokenError
+    ) -> JSONResponse:
+        return JSONResponse(status_code=401, content={"detail": "Not authenticated"})
+
+    @app.exception_handler(InvalidTokenError)
+    async def invalid_token_handler(
+        request: Request, exc: InvalidTokenError
+    ) -> JSONResponse:
+        return JSONResponse(status_code=401, content={"detail": "Invalid authentication token"})
