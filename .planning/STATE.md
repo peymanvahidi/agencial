@@ -10,29 +10,29 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 2 of 8 (Charting Core)
-Plan: 4 of 5 in current phase
-Status: In Progress (plans 01, 04 complete)
-Last activity: 2026-02-19 -- Phase 02 plan 04 executed (watchlist backend API)
+Plan: 5 of 5 in current phase
+Status: In Progress (plans 01, 02, 04 complete)
+Last activity: 2026-02-19 -- Phase 02 plan 02 executed (chart rendering)
 
-Progress: [▓▓▓▓░░░░░░] 18%
+Progress: [▓▓▓▓░░░░░░] 21%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
-- Average duration: ~46min
-- Total execution time: ~4.6 hours
+- Total plans completed: 7
+- Average duration: ~41min
+- Total execution time: ~4.7 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-foundation | 4 | ~4.4h | ~65min |
-| 02-charting-core | 2 | 9min | ~5min |
+| 02-charting-core | 3 | 14min | ~5min |
 
 **Recent Trend:**
-- Last 5 plans: 9min, ~4h (deployment), 4min, 5min
-- Trend: backend-only plans execute fast (~5min avg)
+- Last 5 plans: 5min, 9min, ~4h (deployment), 4min, 5min
+- Trend: charting plans execute fast (~5min avg)
 
 *Updated after each plan completion*
 
@@ -70,6 +70,9 @@ Recent decisions affecting current work:
 - [02-01]: Volume histogram overlay (priceScaleId: '') with scaleMargins top 0.8 -- bottom 20% of chart
 - [02-04]: Direct DB queries for duplicate/existence checks in watchlist service -- avoids stale selectinload relationship cache
 - [02-04]: Default watchlist pre-populated with BTCUSDT, ETHUSDT, SOLUSDT, BNBUSDT on first user access
+- [02-02]: UTCTimestamp branded type cast at series-manager boundary -- keeps OHLCData decoupled from lightweight-charts types
+- [02-02]: Chart type switching triggers full series rebuild (remove + re-add main and volume) via shared effect
+- [02-02]: Arrow key shortcuts: left/right pan 10 bars, up/down zoom 12.5% increments
 
 ### Pending Todos
 
@@ -83,6 +86,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Completed 02-04-PLAN.md (watchlist backend API)
-Resume file: .planning/phases/02-charting-core/02-04-SUMMARY.md
-Note: Plans 01 and 04 complete. Plans 02, 03, 05 remaining in phase 02.
+Stopped at: Completed 02-02-PLAN.md (chart rendering)
+Resume file: .planning/phases/02-charting-core/02-02-SUMMARY.md
+Note: Plans 01, 02, and 04 complete. Plans 03 and 05 remaining in phase 02.
