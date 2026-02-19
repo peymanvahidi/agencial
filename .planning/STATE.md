@@ -5,33 +5,34 @@
 See: .planning/PROJECT.md (updated 2026-02-17)
 
 **Core value:** The AI learning loop: users backtest manually, the AI learns their strategy, and gradually becomes a personalized co-pilot that makes their trading more consistent and profitable.
-**Current focus:** Phase 1: Foundation and Authentication
+**Current focus:** Phase 2: Charting Core
 
 ## Current Position
 
-Phase: 1 of 8 (Foundation and Authentication)
-Plan: 3 of 3 in current phase
-Status: Complete (verified with Playwright screenshots + bug fixes + proxy fix)
-Last activity: 2026-02-17 -- Phase 01 complete (all 3 plans + 7 bug fixes verified)
+Phase: 2 of 8 (Charting Core)
+Plan: 1 of 5 in current phase
+Status: In Progress (plan 01 complete)
+Last activity: 2026-02-19 -- Phase 02 plan 01 executed (chart foundation layer)
 
-Progress: [▓▓▓░░░░░░░] 12%
+Progress: [▓▓▓▓░░░░░░] 15%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: 7.3min
-- Total execution time: 0.37 hours
+- Total plans completed: 5
+- Average duration: ~53min
+- Total execution time: ~4.5 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-foundation | 3 | 22min | 7.3min |
+| 01-foundation | 4 | ~4.4h | ~65min |
+| 02-charting-core | 1 | 4min | 4min |
 
 **Recent Trend:**
-- Last 5 plans: 8min, 6min, 9min
-- Trend: stable
+- Last 5 plans: 6min, 9min, ~4h (deployment), 4min
+- Trend: plan 02-01 was fast (data layer only, no UI rendering)
 
 *Updated after each plan completion*
 
@@ -58,6 +59,15 @@ Recent decisions affecting current work:
 - [01-03]: frontend/.env.local required for Auth.js vars (gitignored, created from .env.example)
 - [01-03]: proxy.ts (or middleware.ts) MUST be in src/ when using src/app/ directory -- root-level file compiles but never executes due to Watchpack watcher path resolution
 - [01-03]: Next.js 16 renames middleware.ts → proxy.ts; export must be `export const proxy = ...`
+- [01-04]: Vercel for frontend + Railway for backend -- native platform support, free tier compatible
+- [01-04]: Railway startCommand must be wrapped in sh -c for $PORT expansion
+- [01-04]: DATABASE_URL scheme auto-normalized from postgres:// to postgresql+asyncpg:// in config.py
+- [01-04]: pool_pre_ping=True required for cloud-hosted databases (Railway PostgreSQL recycles idle connections)
+- [01-04]: No CI/CD pipelines -- Vercel/Railway git integration auto-deploys on push to main
+- [02-01]: Math.imul for seeded PRNG -- correct 32-bit integer multiplication across JS engines
+- [02-01]: Unix timestamps (number) for time values -- matches lightweight-charts v5 UTCTimestamp type
+- [02-01]: toPrecision(8) for price rounding -- realistic decimal precision across all price ranges ($0.08 to $67,000)
+- [02-01]: Volume histogram overlay (priceScaleId: '') with scaleMargins top 0.8 -- bottom 20% of chart
 
 ### Pending Todos
 
@@ -70,7 +80,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-18
-Stopped at: Phase 01 complete -- all 3 plans executed, all 3 SUMMARY.md files created
-Resume file: None -- Phase 01 fully complete, ready for Phase 02 planning
-Note: proxy.ts moved from project root to src/proxy.ts to fix auth redirect not working
+Last session: 2026-02-19
+Stopped at: Completed 02-01-PLAN.md (chart foundation layer)
+Resume file: .planning/phases/02-charting-core/02-01-SUMMARY.md
+Note: Ready for 02-02-PLAN.md execution (chart component rendering)
