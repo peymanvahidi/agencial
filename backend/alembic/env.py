@@ -11,6 +11,7 @@ from app.auth.models import Account, User, VerificationToken  # noqa: F401
 from app.config import settings
 from app.database import Base
 from app.users.models import UserPreference  # noqa: F401
+from app.watchlists.models import Watchlist, WatchlistItem  # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
