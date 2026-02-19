@@ -10,29 +10,29 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 2 of 8 (Charting Core)
-Plan: 5 of 5 in current phase
-Status: In Progress (plans 01, 02, 04 complete)
-Last activity: 2026-02-19 -- Phase 02 plan 02 executed (chart rendering)
+Plan: 5 of 5 in current phase (ALL COMPLETE)
+Status: Phase 02 complete (all 5 plans: 01, 02, 03, 04, 05)
+Last activity: 2026-02-19 -- Phase 02 plan 05 executed (watchlist frontend)
 
-Progress: [▓▓▓▓░░░░░░] 21%
+Progress: [▓▓▓░░░░░░░] 25%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
-- Average duration: ~41min
-- Total execution time: ~4.7 hours
+- Total plans completed: 8
+- Average duration: ~37min
+- Total execution time: ~4.8 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-foundation | 4 | ~4.4h | ~65min |
-| 02-charting-core | 3 | 14min | ~5min |
+| 02-charting-core | 4 | 17min | ~4min |
 
 **Recent Trend:**
-- Last 5 plans: 5min, 9min, ~4h (deployment), 4min, 5min
-- Trend: charting plans execute fast (~5min avg)
+- Last 5 plans: 9min, ~4h (deployment), 4min, 5min, 3min
+- Trend: charting plans execute fast (~4min avg)
 
 *Updated after each plan completion*
 
@@ -73,6 +73,14 @@ Recent decisions affecting current work:
 - [02-02]: UTCTimestamp branded type cast at series-manager boundary -- keeps OHLCData decoupled from lightweight-charts types
 - [02-02]: Chart type switching triggers full series rebuild (remove + re-add main and volume) via shared effect
 - [02-02]: Arrow key shortcuts: left/right pan 10 bars, up/down zoom 12.5% increments
+- [02-03]: Star icon in timeframe dropdown toggles favorites without closing menu (e.stopPropagation)
+- [02-03]: Crosshair toggle uses CrosshairMode.Normal/Hidden from lightweight-charts API
+- [02-03]: Measurement tool uses series.coordinateToPrice() + timeScale.coordinateToTime() for pixel-to-value conversion
+- [02-03]: Measurement overlay with green/red directional shading and price diff (abs + %)
+- [02-05]: Zustand watchlist store without persist -- data lives on backend API, not localStorage
+- [02-05]: Optimistic updates with rollback for addSymbol/removeSymbol for responsive UI
+- [02-05]: Mock prices derived from getMockDataForSymbol last two 1D candles -- deterministic but realistic
+- [02-05]: Chart nav item enabled (href "/" not "#") since chart renders on dashboard
 
 ### Pending Todos
 
@@ -86,6 +94,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Completed 02-02-PLAN.md (chart rendering)
-Resume file: .planning/phases/02-charting-core/02-02-SUMMARY.md
-Note: Plans 01, 02, and 04 complete. Plans 03 and 05 remaining in phase 02.
+Stopped at: Completed 02-05-PLAN.md (watchlist frontend)
+Resume file: .planning/phases/02-charting-core/02-05-SUMMARY.md
+Note: Phase 02 (Charting Core) fully complete. All 5 plans (01-05) executed. Ready for Phase 03.
