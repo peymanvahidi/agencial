@@ -10,29 +10,29 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 2 of 8 (Charting Core)
-Plan: 1 of 5 in current phase
-Status: In Progress (plan 01 complete)
-Last activity: 2026-02-19 -- Phase 02 plan 01 executed (chart foundation layer)
+Plan: 4 of 5 in current phase
+Status: In Progress (plans 01, 04 complete)
+Last activity: 2026-02-19 -- Phase 02 plan 04 executed (watchlist backend API)
 
-Progress: [▓▓▓▓░░░░░░] 15%
+Progress: [▓▓▓▓░░░░░░] 18%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
-- Average duration: ~53min
-- Total execution time: ~4.5 hours
+- Total plans completed: 6
+- Average duration: ~46min
+- Total execution time: ~4.6 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-foundation | 4 | ~4.4h | ~65min |
-| 02-charting-core | 1 | 4min | 4min |
+| 02-charting-core | 2 | 9min | ~5min |
 
 **Recent Trend:**
-- Last 5 plans: 6min, 9min, ~4h (deployment), 4min
-- Trend: plan 02-01 was fast (data layer only, no UI rendering)
+- Last 5 plans: 9min, ~4h (deployment), 4min, 5min
+- Trend: backend-only plans execute fast (~5min avg)
 
 *Updated after each plan completion*
 
@@ -68,6 +68,8 @@ Recent decisions affecting current work:
 - [02-01]: Unix timestamps (number) for time values -- matches lightweight-charts v5 UTCTimestamp type
 - [02-01]: toPrecision(8) for price rounding -- realistic decimal precision across all price ranges ($0.08 to $67,000)
 - [02-01]: Volume histogram overlay (priceScaleId: '') with scaleMargins top 0.8 -- bottom 20% of chart
+- [02-04]: Direct DB queries for duplicate/existence checks in watchlist service -- avoids stale selectinload relationship cache
+- [02-04]: Default watchlist pre-populated with BTCUSDT, ETHUSDT, SOLUSDT, BNBUSDT on first user access
 
 ### Pending Todos
 
@@ -81,6 +83,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Completed 02-01-PLAN.md (chart foundation layer)
-Resume file: .planning/phases/02-charting-core/02-01-SUMMARY.md
-Note: Ready for 02-02-PLAN.md execution (chart component rendering)
+Stopped at: Completed 02-04-PLAN.md (watchlist backend API)
+Resume file: .planning/phases/02-charting-core/02-04-SUMMARY.md
+Note: Plans 01 and 04 complete. Plans 02, 03, 05 remaining in phase 02.
