@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { Loader2 } from "lucide-react";
 import { useWatchlistStore } from "@/stores/watchlist-store";
 import { useChartStore } from "@/stores/chart-store";
@@ -11,7 +12,11 @@ import { WatchlistItem } from "@/components/watchlist/watchlist-item";
 export function WatchlistPanel() {
   const { isLoading, error, fetchWatchlists, removeSymbol } =
     useWatchlistStore();
-  const activeItems = useWatchlistStore((s) => s.getActiveItems());
+  const activeItems = useWatchlistStore(
+    useShallow((s) =>
+      s.watchlists.find((w) => w.id === s.activeWatchlistId)?.items ?? [],
+    ),
+  );
   const { activeSymbol, setSymbol } = useChartStore();
   const leftSidebarCollapsed = useUIStore((s) => s.leftSidebarCollapsed);
 

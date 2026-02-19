@@ -5,8 +5,8 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     """Application settings loaded from environment variables.
 
-    In production, set CORS_ORIGINS to the Vercel deployment URL
-    (e.g., '["https://agencial.vercel.app"]').
+    CORS_ORIGINS is auto-derived from FRONTEND_URL so you only need to set
+    FRONTEND_URL in production. You can still override CORS_ORIGINS explicitly.
     Railway sets PORT dynamically; the default 8000 is for local development.
     """
 
@@ -24,10 +24,16 @@ class Settings(BaseSettings):
     EMAIL_FROM: str = "noreply@agencial.dev"
     BACKEND_URL: str = "http://localhost:8000"
     FRONTEND_URL: str = "http://localhost:3000"
-    # In production, set via env var to Vercel URL (e.g., ["https://agencial.vercel.app"])
     CORS_ORIGINS: list[str] = ["http://localhost:3000"]
     # Railway sets PORT dynamically; default 8000 for local development
     PORT: int = 8000
+
+    @model_validator(mode="after")
+    def ensure_frontend_in_cors(self) -> "Settings":
+        """Always include FRONTEND_URL in CORS origins."""
+        if self.FRONTEND_URL not in self.CORS_ORIGINS:
+            self.CORS_ORIGINS = [*self.CORS_ORIGINS, self.FRONTEND_URL]
+        return self
 
     model_config = {
         "env_file": ("../.env", ".env"),

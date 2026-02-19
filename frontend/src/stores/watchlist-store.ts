@@ -18,6 +18,9 @@ interface Watchlist {
   created_at: string;
 }
 
+// Stable empty array to avoid new reference on each selector call
+const EMPTY_ITEMS: WatchlistItem[] = [];
+
 interface WatchlistState {
   // State
   watchlists: Watchlist[];
@@ -122,7 +125,7 @@ export const useWatchlistStore = create<WatchlistState>()((set, get) => ({
   getActiveItems: () => {
     const { watchlists, activeWatchlistId } = get();
     return (
-      watchlists.find((w) => w.id === activeWatchlistId)?.items ?? []
+      watchlists.find((w) => w.id === activeWatchlistId)?.items ?? EMPTY_ITEMS
     );
   },
 }));
