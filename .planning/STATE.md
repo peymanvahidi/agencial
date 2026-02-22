@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-17)
 
 **Core value:** The AI learning loop: users backtest manually, the AI learns their strategy, and gradually becomes a personalized co-pilot that makes their trading more consistent and profitable.
-**Current focus:** Phase 2: Charting Core
+**Current focus:** Phase 3: Market Data Service
 
 ## Current Position
 
-Phase: 2 of 8 (Charting Core)
-Plan: 6 of 6 in current phase (ALL COMPLETE)
-Status: Phase 02 complete (all 6 plans: 01, 02, 03, 04, 05, 06)
-Last activity: 2026-02-22 -- Phase 02 plan 06 executed (UAT gap closure)
+Phase: 3 of 8 (Market Data Service)
+Plan: 2 of 4 in current phase (01, 02 complete)
+Status: Phase 03 plan 01 complete (backend market data foundation)
+Last activity: 2026-02-22 -- Phase 03 plan 01 executed (provider clients, OHLCV cache, service layer)
 
-Progress: [▓▓▓░░░░░░░] 25%
+Progress: [▓▓▓░░░░░░░] 30%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 10
-- Average duration: ~31min
-- Total execution time: ~4.8 hours
+- Total plans completed: 12
+- Average duration: ~27min
+- Total execution time: ~4.9 hours
 
 **By Phase:**
 
@@ -29,10 +29,11 @@ Progress: [▓▓▓░░░░░░░] 25%
 |-------|-------|-------|----------|
 | 01-foundation | 4 | ~4.4h | ~65min |
 | 02-charting-core | 6 | 22min | ~4min |
+| 03-market-data-service | 2 | 5min | ~3min |
 
 **Recent Trend:**
-- Last 5 plans: 4min, 5min, 3min, 3min, 2min
-- Trend: charting plans execute fast (~3min avg)
+- Last 5 plans: 3min, 3min, 2min, 2min, 3min
+- Trend: data layer plans execute fast (~3min avg)
 
 *Updated after each plan completion*
 
@@ -85,6 +86,13 @@ Recent decisions affecting current work:
 - [02-06]: 4-state measurement cycle uses two boolean refs (finalized + cleared) to minimize code churn
 - [02-06]: Return undefined as T for 204 No Content -- DELETE callers don't use return value
 - [02-06]: mt-auto on collapse toggle wrapper leverages existing flex-col parent for bottom pinning
+- [03-01]: Provider abstraction via MarketDataProvider ABC -- allows swapping/adding providers without changing service layer
+- [03-01]: Cache-first strategy with ON CONFLICT DO NOTHING for idempotent bulk inserts
+- [03-01]: Asset class detection via "/" in symbol for auto-routing crypto (Binance) vs forex (Twelve Data)
+- [03-01]: Hardcoded 25 forex pairs instead of API call -- Twelve Data symbol listing requires premium tier
+- [03-02]: No persist middleware on market data store -- live WebSocket data is transient, not cached to localStorage
+- [03-02]: WebSocket marks disconnected after 5 failed reconnect attempts but never stops retrying
+- [03-02]: REST helpers use existing apiGet pattern for consistent cookie forwarding through Next.js proxy
 
 ### Pending Todos
 
@@ -98,6 +106,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Phase 3 context gathered
-Resume file: .planning/phases/03-market-data-service/03-CONTEXT.md
-Note: Phase 03 context captured. Ready for /gsd:plan-phase 3.
+Stopped at: Completed 03-01-PLAN.md
+Resume file: .planning/phases/03-market-data-service/03-01-SUMMARY.md
+Note: Phase 03 plans 01 and 02 complete. Next: 03-03 (backend WebSocket relay + REST endpoints).

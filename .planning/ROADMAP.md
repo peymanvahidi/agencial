@@ -74,7 +74,7 @@ Plans:
 
 Plans:
 - [ ] 03-01-PLAN.md -- Backend market data foundation: Binance + Twelve Data provider clients, OHLCV cache model, Alembic migration, Pydantic schemas, cache-first service layer
-- [ ] 03-02-PLAN.md -- Frontend market data layer: TypeScript types, Zustand market-data store, WebSocket hook with reconnection, REST API helpers
+- [x] 03-02-PLAN.md -- Frontend market data layer: TypeScript types, Zustand market-data store, WebSocket hook with reconnection, REST API helpers
 - [ ] 03-03-PLAN.md -- Backend WebSocket relay + REST endpoints: stream manager, connection manager, WS endpoint for real-time streaming, REST for historical data
 - [ ] 03-04-PLAN.md -- Frontend chart integration: replace mock data with live streaming, infinite scroll history, connection banner, watchlist live prices, timeframe position persistence
 
@@ -171,7 +171,7 @@ Note: Phases 3, 4, and 5 all depend on Phase 2 but not on each other. However, P
 |-------|----------------|--------|-----------|
 | 1. Foundation and Authentication | 3/4 | Gap closure pending | - |
 | 2. Charting Core | 0/5 | Complete    | 2026-02-22 |
-| 3. Market Data Service | 0/4 | Not started | - |
+| 3. Market Data Service | 1/4 | In progress | - |
 | 4. Drawing Tools | 0/3 | Not started | - |
 | 5. Technical Indicators | 0/3 | Not started | - |
 | 6. Backtesting and Trade Journal | 0/3 | Not started | - |

@@ -81,10 +81,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Data & Markets
 
-- [ ] **DATA-01**: Platform provides real-time crypto market data (BTC, ETH, major altcoins)
-- [ ] **DATA-02**: Platform provides real-time forex market data (major and minor pairs)
-- [ ] **DATA-03**: Platform provides historical OHLCV data for backtesting
-- [ ] **DATA-04**: Data updates in real-time via WebSocket streaming
+- [x] **DATA-01**: Platform provides real-time crypto market data (BTC, ETH, major altcoins)
+- [x] **DATA-02**: Platform provides real-time forex market data (major and minor pairs)
+- [x] **DATA-03**: Platform provides historical OHLCV data for backtesting
+- [x] **DATA-04**: Data updates in real-time via WebSocket streaming
 
 ### User Management
 
@@ -161,10 +161,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CHART-08 | Phase 2 | Complete |
 | CHART-09 | Phase 2 | Complete |
 | CHART-10 | Phase 2 | Pending |
-| DATA-01 | Phase 3 | Pending |
-| DATA-02 | Phase 3 | Pending |
-| DATA-03 | Phase 3 | Pending |
-| DATA-04 | Phase 3 | Pending |
+| DATA-01 | Phase 3 | Complete |
+| DATA-02 | Phase 3 | Complete |
+| DATA-03 | Phase 3 | Complete |
+| DATA-04 | Phase 3 | Complete |
 | DRAW-01 | Phase 4 | Pending |
 | DRAW-02 | Phase 4 | Pending |
 | DRAW-03 | Phase 4 | Pending |
