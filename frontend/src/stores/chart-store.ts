@@ -9,6 +9,8 @@ import {
   DEFAULT_CHART_TYPE,
 } from "@/types/chart";
 
+export type DataSource = "mock" | "live";
+
 interface ChartState {
   // State
   activeSymbol: string;
@@ -16,6 +18,7 @@ interface ChartState {
   chartType: ChartType;
   scaleMode: ScaleMode;
   favoriteTimeframes: Timeframe[];
+  dataSource: DataSource;
 
   // Actions
   setSymbol: (symbol: string) => void;
@@ -23,6 +26,7 @@ interface ChartState {
   setChartType: (chartType: ChartType) => void;
   toggleScaleMode: () => void;
   toggleFavoriteTimeframe: (tf: Timeframe) => void;
+  setDataSource: (source: DataSource) => void;
 }
 
 export const useChartStore = create<ChartState>()(
@@ -33,6 +37,7 @@ export const useChartStore = create<ChartState>()(
       chartType: DEFAULT_CHART_TYPE,
       scaleMode: "linear" as ScaleMode,
       favoriteTimeframes: ["1H", "4H", "1D"] as Timeframe[],
+      dataSource: "live" as DataSource,
 
       setSymbol: (symbol: string) => set({ activeSymbol: symbol }),
 
@@ -59,6 +64,8 @@ export const useChartStore = create<ChartState>()(
             favoriteTimeframes: [...favorites, tf],
           };
         }),
+
+      setDataSource: (source: DataSource) => set({ dataSource: source }),
     }),
     {
       name: "chart-store",
