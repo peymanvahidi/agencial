@@ -180,6 +180,7 @@ export function ChartContainer() {
         setMeasureA(null);
         setMeasureB(null);
         measureFinalizedRef.current = false;
+        measureClearedRef.current = false;
       }
       return !prev;
     });
@@ -190,6 +191,7 @@ export function ChartContainer() {
   // ---------------------------------------------------------------------------
 
   const measureFinalizedRef = useRef(false);
+  const measureClearedRef = useRef(false);
 
   const getMeasurePoint = useCallback(
     (event: React.MouseEvent<HTMLDivElement>): MeasurePoint | null => {
@@ -217,13 +219,22 @@ export function ChartContainer() {
       const point = getMeasurePoint(event);
       if (!point) return;
 
-      if (!measureA || measureFinalizedRef.current) {
-        // First click (or restart after finalized) -- set point A
+      if (measureFinalizedRef.current && !measureClearedRef.current) {
+        // 3rd click: clear the overlay
+        setMeasureA(null);
+        setMeasureB(null);
+        measureClearedRef.current = true;
+        return;
+      }
+
+      if (!measureA || measureClearedRef.current) {
+        // 1st click (or 4th click after clear): set point A
         setMeasureA(point);
         setMeasureB(null);
         measureFinalizedRef.current = false;
+        measureClearedRef.current = false;
       } else {
-        // Second click -- finalize point B
+        // 2nd click: finalize point B
         setMeasureB(point);
         measureFinalizedRef.current = true;
       }
@@ -249,6 +260,7 @@ export function ChartContainer() {
         setMeasureA(null);
         setMeasureB(null);
         measureFinalizedRef.current = false;
+        measureClearedRef.current = false;
         return;
       }
 
