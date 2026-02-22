@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 3 of 8 (Market Data Service)
-Plan: 2 of 4 in current phase (01, 02 complete)
-Status: Phase 03 plan 01 complete (backend market data foundation)
-Last activity: 2026-02-22 -- Phase 03 plan 01 executed (provider clients, OHLCV cache, service layer)
+Plan: 3 of 4 in current phase (01, 02, 03 complete)
+Status: Phase 03 plan 03 complete (backend WebSocket relay + REST endpoints)
+Last activity: 2026-02-22 -- Phase 03 plan 03 executed (stream manager, connection manager, WS/REST endpoints)
 
-Progress: [▓▓▓░░░░░░░] 30%
+Progress: [▓▓▓▓░░░░░░] 35%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 12
-- Average duration: ~27min
-- Total execution time: ~4.9 hours
+- Total plans completed: 13
+- Average duration: ~25min
+- Total execution time: ~5 hours
 
 **By Phase:**
 
@@ -29,13 +29,15 @@ Progress: [▓▓▓░░░░░░░] 30%
 |-------|-------|-------|----------|
 | 01-foundation | 4 | ~4.4h | ~65min |
 | 02-charting-core | 6 | 22min | ~4min |
-| 03-market-data-service | 2 | 5min | ~3min |
+| 03-market-data-service | 3 | 8min | ~3min |
 
 **Recent Trend:**
 - Last 5 plans: 3min, 3min, 2min, 2min, 3min
 - Trend: data layer plans execute fast (~3min avg)
 
 *Updated after each plan completion*
+| Phase 03 P01 | 3min | 2 tasks | 11 files |
+| Phase 03 P03 | 3min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -93,6 +95,10 @@ Recent decisions affecting current work:
 - [03-02]: No persist middleware on market data store -- live WebSocket data is transient, not cached to localStorage
 - [03-02]: WebSocket marks disconnected after 5 failed reconnect attempts but never stops retrying
 - [03-02]: REST helpers use existing apiGet pattern for consistent cookie forwarding through Next.js proxy
+- [03-03]: Module-level singletons for ConnectionManager and StreamManager in router module -- persist across requests
+- [03-03]: REST polling (30s) for forex via Twelve Data REST instead of WS ticks -- avoids tick-to-candle aggregation
+- [03-03]: Exponential backoff with jitter (1s-30s crypto, 1s-120s forex) for upstream reconnection
+- [03-03]: Fan-out removes dead clients inline and stops orphaned upstream streams immediately
 
 ### Pending Todos
 
@@ -106,6 +112,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 03-01-PLAN.md
-Resume file: .planning/phases/03-market-data-service/03-01-SUMMARY.md
-Note: Phase 03 plans 01 and 02 complete. Next: 03-03 (backend WebSocket relay + REST endpoints).
+Stopped at: Completed 03-03-PLAN.md
+Resume file: .planning/phases/03-market-data-service/03-03-SUMMARY.md
+Note: Phase 03 plans 01, 02, 03 complete. Next: 03-04 (frontend-backend WebSocket integration).
