@@ -13,7 +13,7 @@ Agencial delivers an AI-powered trading platform by building up from infrastruct
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [ ] **Phase 1: Foundation and Authentication** - Project scaffolding, database schema, user accounts, and deployment infrastructure
-- [ ] **Phase 2: Charting Core** - Interactive candlestick charts with timeframes, zoom/pan, crosshair, symbol search, and watchlists
+- [x] **Phase 2: Charting Core** - Interactive candlestick charts with timeframes, zoom/pan, crosshair, symbol search, and watchlists (completed 2026-02-22)
 - [ ] **Phase 3: Market Data Service** - Real-time and historical price data for crypto and forex via WebSocket streaming
 - [ ] **Phase 4: Drawing Tools** - Trendlines, Fibonacci, support/resistance, channels, annotations, and persistent drawings
 - [ ] **Phase 5: Technical Indicators** - Classic and advanced indicators with configurable parameters, multi-pane layout, and Web Worker computation
@@ -70,11 +70,13 @@ Plans:
   2. User can view real-time forex prices (major and minor pairs) updating on the chart without page refresh
   3. User can scroll back through 3+ years of crypto history and 5+ years of forex history with OHLCV candles loading seamlessly
   4. Price updates arrive via WebSocket with sub-second latency, and the UI shows a visible staleness indicator if the connection drops
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 03-01: TBD
-- [ ] 03-02: TBD
+- [ ] 03-01-PLAN.md -- Backend market data foundation: Binance + Twelve Data provider clients, OHLCV cache model, Alembic migration, Pydantic schemas, cache-first service layer
+- [ ] 03-02-PLAN.md -- Frontend market data layer: TypeScript types, Zustand market-data store, WebSocket hook with reconnection, REST API helpers
+- [ ] 03-03-PLAN.md -- Backend WebSocket relay + REST endpoints: stream manager, connection manager, WS endpoint for real-time streaming, REST for historical data
+- [ ] 03-04-PLAN.md -- Frontend chart integration: replace mock data with live streaming, infinite scroll history, connection banner, watchlist live prices, timeframe position persistence
 
 ### Phase 4: Drawing Tools
 **Goal**: Users can annotate charts with professional drawing tools that persist across sessions
@@ -168,8 +170,8 @@ Note: Phases 3, 4, and 5 all depend on Phase 2 but not on each other. However, P
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation and Authentication | 3/4 | Gap closure pending | - |
-| 2. Charting Core | 0/5 | Not started | - |
-| 3. Market Data Service | 0/2 | Not started | - |
+| 2. Charting Core | 0/5 | Complete    | 2026-02-22 |
+| 3. Market Data Service | 0/4 | Not started | - |
 | 4. Drawing Tools | 0/3 | Not started | - |
 | 5. Technical Indicators | 0/3 | Not started | - |
 | 6. Backtesting and Trade Journal | 0/3 | Not started | - |
