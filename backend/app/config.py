@@ -21,6 +21,13 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379"
     NEXTAUTH_SECRET: str = ""
     RESEND_API_KEY: str = ""
+
+    # Market data provider settings
+    TWELVE_DATA_API_KEY: str = ""
+    BINANCE_REST_URL: str = "https://api.binance.com"
+    BINANCE_WS_URL: str = "wss://stream.binance.com:9443"
+    TWELVE_DATA_REST_URL: str = "https://api.twelvedata.com"
+    TWELVE_DATA_WS_URL: str = "wss://ws.twelvedata.com/v1/quotes/price"
     EMAIL_FROM: str = "noreply@agencial.dev"
     BACKEND_URL: str = "http://localhost:8000"
     FRONTEND_URL: str = "http://localhost:3000"
