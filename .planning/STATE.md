@@ -9,19 +9,19 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 
 ## Current Position
 
-Phase: 3 of 8 (Market Data Service)
-Plan: 3 of 4 in current phase (01, 02, 03 complete)
-Status: Phase 03 plan 03 complete (backend WebSocket relay + REST endpoints)
-Last activity: 2026-02-22 -- Phase 03 plan 03 executed (stream manager, connection manager, WS/REST endpoints)
+Phase: 3 of 8 (Market Data Service) -- COMPLETE
+Plan: 4 of 4 in current phase (01, 02, 03, 04 complete)
+Status: Phase 03 complete -- all 4 plans executed
+Last activity: 2026-02-22 -- Phase 03 plan 04 executed (UI data integration, live chart, watchlist, infinite scroll)
 
-Progress: [▓▓▓▓░░░░░░] 35%
+Progress: [▓▓▓▓░░░░░░] 40%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 13
-- Average duration: ~25min
-- Total execution time: ~5 hours
+- Total plans completed: 14
+- Average duration: ~23min
+- Total execution time: ~5.1 hours
 
 **By Phase:**
 
@@ -29,15 +29,16 @@ Progress: [▓▓▓▓░░░░░░] 35%
 |-------|-------|-------|----------|
 | 01-foundation | 4 | ~4.4h | ~65min |
 | 02-charting-core | 6 | 22min | ~4min |
-| 03-market-data-service | 3 | 8min | ~3min |
+| 03-market-data-service | 4 | 14min | ~4min |
 
 **Recent Trend:**
-- Last 5 plans: 3min, 3min, 2min, 2min, 3min
-- Trend: data layer plans execute fast (~3min avg)
+- Last 5 plans: 3min, 2min, 2min, 3min, 6min
+- Trend: UI integration plans slightly longer than pure data layer (~6min)
 
 *Updated after each plan completion*
 | Phase 03 P01 | 3min | 2 tasks | 11 files |
 | Phase 03 P03 | 3min | 2 tasks | 4 files |
+| Phase 03 P04 | 6min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -99,6 +100,11 @@ Recent decisions affecting current work:
 - [03-03]: REST polling (30s) for forex via Twelve Data REST instead of WS ticks -- avoids tick-to-candle aggregation
 - [03-03]: Exponential backoff with jitter (1s-30s crypto, 1s-120s forex) for upstream reconnection
 - [03-03]: Fan-out removes dead clients inline and stops orphaned upstream streams immediately
+- [03-04]: series.update() for real-time candle animation -- single-bar update without full setData rebuild
+- [03-04]: Skeleton candles use flat OHLC with _skeleton flag for identification and replacement
+- [03-04]: DataSource toggle (mock/live) in chart store for graceful backend fallback
+- [03-04]: Live prices in watchlist via useMarketDataStore selector with mock data fallback
+- [03-04]: Combined symbol search merges CRYPTO_SYMBOLS + FOREX_SYMBOLS into single searchable list
 
 ### Pending Todos
 
@@ -112,6 +118,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 03-03-PLAN.md
-Resume file: .planning/phases/03-market-data-service/03-03-SUMMARY.md
-Note: Phase 03 plans 01, 02, 03 complete. Next: 03-04 (frontend-backend WebSocket integration).
+Stopped at: Completed 03-04-PLAN.md -- Phase 03 complete
+Resume file: .planning/phases/03-market-data-service/03-04-SUMMARY.md
+Note: Phase 03 fully complete (all 4 plans). Next: Phase 04 (Backtesting Engine).
