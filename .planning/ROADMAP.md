@@ -51,7 +51,7 @@ Plans:
   3. User can zoom in/out and pan through chart history smoothly, with crosshair showing price/time and OHLC legend updating in real time
   4. User can toggle between linear and logarithmic price scales and see the chart rescale correctly
   5. User can search for symbols, switch between them instantly, and manage a persistent watchlist of tracked instruments
-**Plans**: 5 plans
+**Plans**: 6 plans
 
 Plans:
 - [ ] 02-01-PLAN.md -- Chart foundation: types, mock OHLCV data generator, Heikin-Ashi transform, chart config, Zustand chart store, install lightweight-charts
@@ -59,6 +59,7 @@ Plans:
 - [ ] 02-03-PLAN.md -- Chart toolbar and tools: top bar (timeframe switcher, chart type toggle, scale toggle), left sidebar tools (crosshair, zoom, measurement)
 - [ ] 02-04-PLAN.md -- Watchlist backend: SQLAlchemy models, Alembic migration, Pydantic schemas, CRUD API endpoints with auto-created default watchlist
 - [ ] 02-05-PLAN.md -- Watchlist frontend and symbol management: Zustand store with backend sync, watchlist panel in left sidebar, symbol search, click-to-switch chart
+- [ ] 02-06-PLAN.md -- [Gap closure] UAT fixes: favorite timeframes sort order, measurement tool 3rd-click behavior, watchlist remove rollback, sidebar toggle positioning
 
 ### Phase 3: Market Data Service
 **Goal**: Users see live, streaming price data on their charts and can load years of historical data for analysis and backtesting

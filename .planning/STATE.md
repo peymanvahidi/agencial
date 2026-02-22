@@ -10,17 +10,17 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 2 of 8 (Charting Core)
-Plan: 5 of 5 in current phase (ALL COMPLETE)
-Status: Phase 02 complete (all 5 plans: 01, 02, 03, 04, 05)
-Last activity: 2026-02-19 -- Phase 02 plan 05 executed (watchlist frontend)
+Plan: 6 of 6 in current phase (ALL COMPLETE)
+Status: Phase 02 complete (all 6 plans: 01, 02, 03, 04, 05, 06)
+Last activity: 2026-02-22 -- Phase 02 plan 06 executed (UAT gap closure)
 
 Progress: [▓▓▓░░░░░░░] 25%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 9
-- Average duration: ~34min
+- Total plans completed: 10
+- Average duration: ~31min
 - Total execution time: ~4.8 hours
 
 **By Phase:**
@@ -28,11 +28,11 @@ Progress: [▓▓▓░░░░░░░] 25%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-foundation | 4 | ~4.4h | ~65min |
-| 02-charting-core | 5 | 20min | ~4min |
+| 02-charting-core | 6 | 22min | ~4min |
 
 **Recent Trend:**
-- Last 5 plans: ~4h (deployment), 4min, 5min, 3min, 3min
-- Trend: charting plans execute fast (~4min avg)
+- Last 5 plans: 4min, 5min, 3min, 3min, 2min
+- Trend: charting plans execute fast (~3min avg)
 
 *Updated after each plan completion*
 
@@ -81,6 +81,10 @@ Recent decisions affecting current work:
 - [02-05]: Optimistic updates with rollback for addSymbol/removeSymbol for responsive UI
 - [02-05]: Mock prices derived from getMockDataForSymbol last two 1D candles -- deterministic but realistic
 - [02-05]: Chart nav item enabled (href "/" not "#") since chart renders on dashboard
+- [02-06]: Sort favorites via TIMEFRAMES.findIndex() -- canonical ordering without mutating store array
+- [02-06]: 4-state measurement cycle uses two boolean refs (finalized + cleared) to minimize code churn
+- [02-06]: Return undefined as T for 204 No Content -- DELETE callers don't use return value
+- [02-06]: mt-auto on collapse toggle wrapper leverages existing flex-col parent for bottom pinning
 
 ### Pending Todos
 
@@ -93,7 +97,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-19
-Stopped at: Completed 02-05-PLAN.md (watchlist frontend)
-Resume file: .planning/phases/02-charting-core/02-05-SUMMARY.md
-Note: Phase 02 (Charting Core) fully complete. All 5 plans (01-05) executed. Ready for Phase 03.
+Last session: 2026-02-22
+Stopped at: Completed 02-06-PLAN.md (UAT gap closure)
+Resume file: .planning/phases/02-charting-core/02-06-SUMMARY.md
+Note: Phase 02 (Charting Core) fully complete. All 6 plans (01-06) executed. Ready for Phase 03.
