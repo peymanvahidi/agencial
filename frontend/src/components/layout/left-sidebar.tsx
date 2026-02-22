@@ -68,7 +68,7 @@ export function LeftSidebar() {
       )}
 
       {/* Collapse toggle */}
-      <div className="border-t border-border p-2">
+      <div className="mt-auto border-t border-border p-2">
         <Button
           variant="ghost"
           size="sm"
