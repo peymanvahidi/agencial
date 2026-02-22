@@ -1,19 +1,29 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { ISeriesApi, SeriesType } from "lightweight-charts";
+import type { ISeriesApi, SeriesType, LogicalRange } from "lightweight-charts";
 import { CrosshairMode } from "lightweight-charts";
 import { useChart } from "@/components/chart/hooks/use-chart";
 import { useCrosshair } from "@/components/chart/hooks/use-crosshair";
 import {
   addMainSeries,
   addVolumeSeries,
+  updateCandle,
+  prependHistory,
+  generateSkeletonCandles,
+  replaceSkeletonWithReal,
+  type SkeletonCandle,
 } from "@/components/chart/series-manager";
 import { OHLCLegend } from "@/components/chart/ohlc-legend";
 import { ChartToolbar } from "@/components/chart/chart-toolbar";
 import { ChartToolsSidebar } from "@/components/chart/chart-tools-sidebar";
+import { ConnectionBanner } from "@/components/chart/connection-banner";
 import { useChartStore } from "@/stores/chart-store";
-import { getMockDataForSymbol } from "@/lib/mock-data";
+import { useMarketDataConnection } from "@/hooks/use-market-data";
+import { fetchHistoricalCandles } from "@/lib/market-data-api";
+import { getMockDataForSymbol, getIntervalSeconds } from "@/lib/mock-data";
+import type { OHLCVCandle, PriceUpdate } from "@/types/market-data";
+import type { Timeframe } from "@/types/chart";
 
 // ---------------------------------------------------------------------------
 // Measurement point type
@@ -46,6 +56,14 @@ function formatTimeDiff(fromTs: number, toTs: number): string {
 }
 
 // ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const INITIAL_CANDLE_COUNT = 500;
+const HISTORY_FETCH_SIZE = 500;
+const SCROLL_THRESHOLD = 10;
+
+// ---------------------------------------------------------------------------
 // ChartContainer
 // ---------------------------------------------------------------------------
 
@@ -55,6 +73,9 @@ function formatTimeDiff(fromTs: number, toTs: number): string {
  * Reads state from chart store (activeSymbol, activeTimeframe, chartType, scaleMode),
  * manages the chart instance lifecycle via useChart, subscribes to crosshair for
  * OHLC legend, and handles data loading / series switching.
+ *
+ * Supports live data via WebSocket with graceful fallback to mock data.
+ * Implements infinite scroll with skeleton candle placeholders.
  *
  * Renders: ChartToolbar (top) + ChartToolsSidebar (left) + chart canvas.
  */
@@ -68,12 +89,62 @@ export function ChartContainer() {
   const activeTimeframe = useChartStore((s) => s.activeTimeframe);
   const chartType = useChartStore((s) => s.chartType);
   const scaleMode = useChartStore((s) => s.scaleMode);
+  const dataSource = useChartStore((s) => s.dataSource);
 
   // Chart instance
   const { chartRef } = useChart(canvasWrapperRef);
 
   // Crosshair OHLC legend data
   const { legendData } = useCrosshair(chartRef, mainSeriesRef);
+
+  // Real-time data refs
+  const currentDataRef = useRef<SkeletonCandle[]>([]);
+  const isLoadingHistoryRef = useRef(false);
+  const prevSubRef = useRef<{ symbol: string; interval: string } | null>(null);
+  const rangeListenerRef = useRef<(() => void) | null>(null);
+
+  // ---------------------------------------------------------------------------
+  // WebSocket connection with real-time update handler
+  // ---------------------------------------------------------------------------
+
+  const onPriceUpdate = useCallback(
+    (update: PriceUpdate) => {
+      if (
+        update.symbol !== activeSymbol ||
+        update.interval !== activeTimeframe
+      ) {
+        return;
+      }
+
+      const candle: OHLCVCandle = { ...update.candle };
+      updateCandle(
+        mainSeriesRef.current,
+        volumeSeriesRef.current,
+        candle,
+        chartType,
+      );
+
+      // When candle is closed, append as a new bar in our data ref
+      if (update.is_closed) {
+        currentDataRef.current = [...currentDataRef.current, candle];
+      } else {
+        // Update the last candle in currentDataRef for consistency
+        const data = currentDataRef.current;
+        if (data.length > 0 && data[data.length - 1].time === candle.time) {
+          data[data.length - 1] = candle;
+        } else if (
+          data.length === 0 ||
+          data[data.length - 1].time < candle.time
+        ) {
+          currentDataRef.current = [...data, candle];
+        }
+      }
+    },
+    [activeSymbol, activeTimeframe, chartType],
+  );
+
+  const { subscribe, unsubscribe, connectionStatus } =
+    useMarketDataConnection({ onPriceUpdate });
 
   // ---------------------------------------------------------------------------
   // Sidebar tool state
@@ -84,36 +155,285 @@ export function ChartContainer() {
   const [measureB, setMeasureB] = useState<MeasurePoint | null>(null);
 
   // ---------------------------------------------------------------------------
-  // Data loading effect: regenerate mock data when symbol/timeframe changes
+  // Helper: Remove and rebuild chart series
+  // ---------------------------------------------------------------------------
+  const rebuildSeries = useCallback(
+    (data: SkeletonCandle[], shouldFitContent: boolean) => {
+      const chart = chartRef.current;
+      if (!chart) return;
+
+      // Remove existing series
+      if (mainSeriesRef.current) {
+        try {
+          chart.removeSeries(mainSeriesRef.current);
+        } catch {
+          /* already removed */
+        }
+        mainSeriesRef.current = null;
+      }
+      if (volumeSeriesRef.current) {
+        try {
+          chart.removeSeries(volumeSeriesRef.current);
+        } catch {
+          /* already removed */
+        }
+        volumeSeriesRef.current = null;
+      }
+
+      // Add new series with data
+      mainSeriesRef.current = addMainSeries(chart, chartType, data);
+      volumeSeriesRef.current = addVolumeSeries(chart, data);
+
+      if (!shouldFitContent) {
+        // Caller will handle visible range restoration
+      }
+
+      currentDataRef.current = data;
+    },
+    [chartRef, chartType],
+  );
+
+  // ---------------------------------------------------------------------------
+  // Data loading effect: load real or mock data when symbol/timeframe changes
   // ---------------------------------------------------------------------------
   useEffect(() => {
-    const data = getMockDataForSymbol(activeSymbol, activeTimeframe);
-
     const chart = chartRef.current;
     if (!chart) return;
 
-    // Remove existing series before adding new ones
-    if (mainSeriesRef.current) {
-      try {
-        chart.removeSeries(mainSeriesRef.current);
-      } catch {
-        // Series may already have been removed
-      }
-      mainSeriesRef.current = null;
-    }
-    if (volumeSeriesRef.current) {
-      try {
-        chart.removeSeries(volumeSeriesRef.current);
-      } catch {
-        // Series may already have been removed
-      }
-      volumeSeriesRef.current = null;
+    let cancelled = false;
+
+    // Unsubscribe from previous WS subscription
+    if (prevSubRef.current) {
+      unsubscribe(prevSubRef.current.symbol, prevSubRef.current.interval);
     }
 
-    // Add new series
-    mainSeriesRef.current = addMainSeries(chart, chartType, data);
-    volumeSeriesRef.current = addVolumeSeries(chart, data);
-  }, [activeSymbol, activeTimeframe, chartRef, chartType]);
+    // Determine if this was a timeframe-only change (for range preservation)
+    const wasTimeframeChange =
+      prevSubRef.current?.symbol === activeSymbol &&
+      prevSubRef.current?.interval !== activeTimeframe;
+
+    // Save visible range before data swap (for timeframe switch)
+    const savedRange = wasTimeframeChange
+      ? chart.timeScale().getVisibleRange()
+      : null;
+
+    if (dataSource === "mock") {
+      // --- Mock data path ---
+      const data = getMockDataForSymbol(activeSymbol, activeTimeframe);
+      rebuildSeries(data as SkeletonCandle[], true);
+      prevSubRef.current = {
+        symbol: activeSymbol,
+        interval: activeTimeframe,
+      };
+      return;
+    }
+
+    // --- Live data path ---
+    async function loadLiveData() {
+      try {
+        const candles = await fetchHistoricalCandles(
+          activeSymbol,
+          activeTimeframe,
+          { limit: INITIAL_CANDLE_COUNT },
+        );
+
+        if (cancelled) return;
+
+        rebuildSeries(candles as SkeletonCandle[], !savedRange);
+
+        // Restore visible range on timeframe switch
+        if (savedRange && chartRef.current) {
+          try {
+            chartRef.current.timeScale().setVisibleRange(savedRange);
+          } catch {
+            // Range may be out of new data bounds -- fall back to fitContent
+            chartRef.current.timeScale().fitContent();
+          }
+        }
+
+        // Subscribe to WS for live updates
+        subscribe(activeSymbol, activeTimeframe);
+        prevSubRef.current = {
+          symbol: activeSymbol,
+          interval: activeTimeframe,
+        };
+      } catch (err) {
+        if (cancelled) return;
+
+        // Backend unreachable -- fall back to mock data
+        console.warn(
+          "[chart] Failed to fetch live data, falling back to mock:",
+          err,
+        );
+        const mockData = getMockDataForSymbol(activeSymbol, activeTimeframe);
+        rebuildSeries(mockData as SkeletonCandle[], true);
+        prevSubRef.current = {
+          symbol: activeSymbol,
+          interval: activeTimeframe,
+        };
+      }
+    }
+
+    loadLiveData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    activeSymbol,
+    activeTimeframe,
+    chartRef,
+    chartType,
+    dataSource,
+    subscribe,
+    unsubscribe,
+    rebuildSeries,
+  ]);
+
+  // ---------------------------------------------------------------------------
+  // Infinite scroll with skeleton candle loading
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    const chart = chartRef.current;
+    if (!chart || dataSource === "mock") return;
+
+    // Clean up previous listener
+    if (rangeListenerRef.current) {
+      rangeListenerRef.current();
+      rangeListenerRef.current = null;
+    }
+
+    const intervalSeconds = getIntervalSeconds(activeTimeframe as Timeframe);
+
+    const handleRangeChange = (logicalRange: LogicalRange | null) => {
+      if (!logicalRange) return;
+      if (logicalRange.from >= SCROLL_THRESHOLD) return;
+      if (isLoadingHistoryRef.current) return;
+
+      const data = currentDataRef.current;
+      if (data.length === 0) return;
+
+      isLoadingHistoryRef.current = true;
+
+      const oldestTime = data[0].time as number;
+      const lastKnownPrice = data[0].close;
+
+      // Immediately show skeleton candles
+      const skeletons = generateSkeletonCandles(
+        HISTORY_FETCH_SIZE,
+        oldestTime - intervalSeconds,
+        intervalSeconds,
+        lastKnownPrice,
+      );
+
+      // Save visible range before modifying data
+      const preRange = chart.timeScale().getVisibleRange();
+
+      // Prepend skeletons to current data and update chart
+      const withSkeletons = prependHistory(
+        mainSeriesRef.current,
+        volumeSeriesRef.current,
+        data,
+        skeletons,
+        chartType,
+      );
+      currentDataRef.current = withSkeletons as SkeletonCandle[];
+
+      // Restore visible range so view doesn't jump
+      if (preRange) {
+        try {
+          chart.timeScale().setVisibleRange(preRange);
+        } catch {
+          /* range out of bounds */
+        }
+      }
+
+      // Fetch real historical data
+      fetchHistoricalCandles(activeSymbol, activeTimeframe, {
+        endTime: oldestTime - 1,
+        limit: HISTORY_FETCH_SIZE,
+      })
+        .then((fetchedCandles) => {
+          // Save range before replacing
+          const preReplaceRange = chart.timeScale().getVisibleRange();
+
+          const updated = replaceSkeletonWithReal(
+            mainSeriesRef.current,
+            volumeSeriesRef.current,
+            currentDataRef.current,
+            fetchedCandles,
+            chartType,
+          );
+          currentDataRef.current = updated;
+
+          // Restore visible range
+          if (preReplaceRange) {
+            try {
+              chart.timeScale().setVisibleRange(preReplaceRange);
+            } catch {
+              /* range out of bounds */
+            }
+          }
+
+          isLoadingHistoryRef.current = false;
+        })
+        .catch((err) => {
+          console.warn("[chart] Failed to fetch history:", err);
+
+          // Remove skeleton candles on failure
+          const preReplaceRange = chart.timeScale().getVisibleRange();
+
+          const cleaned = replaceSkeletonWithReal(
+            mainSeriesRef.current,
+            volumeSeriesRef.current,
+            currentDataRef.current,
+            [], // empty = just remove skeletons
+            chartType,
+          );
+          currentDataRef.current = cleaned;
+
+          if (preReplaceRange) {
+            try {
+              chart.timeScale().setVisibleRange(preReplaceRange);
+            } catch {
+              /* range out of bounds */
+            }
+          }
+
+          isLoadingHistoryRef.current = false;
+        });
+    };
+
+    chart.timeScale().subscribeVisibleLogicalRangeChange(handleRangeChange);
+
+    const cleanup = () => {
+      const c = chartRef.current;
+      if (c) {
+        try {
+          c.timeScale().unsubscribeVisibleLogicalRangeChange(handleRangeChange);
+        } catch {
+          /* chart may be disposed */
+        }
+      }
+    };
+
+    rangeListenerRef.current = cleanup;
+
+    return cleanup;
+  }, [chartRef, activeSymbol, activeTimeframe, chartType, dataSource]);
+
+  // Cleanup WS subscription on unmount
+  useEffect(() => {
+    return () => {
+      if (prevSubRef.current) {
+        unsubscribe(prevSubRef.current.symbol, prevSubRef.current.interval);
+      }
+      if (rangeListenerRef.current) {
+        rangeListenerRef.current();
+        rangeListenerRef.current = null;
+      }
+    };
+  }, [unsubscribe]);
 
   // Scale mode effect: toggle between linear and logarithmic
   useEffect(() => {
@@ -383,6 +703,9 @@ export function ChartContainer() {
             cursor: measureActive ? "crosshair" : undefined,
           }}
         >
+          {/* Connection status banner */}
+          <ConnectionBanner status={connectionStatus} />
+
           {/* OHLC Legend overlay */}
           <OHLCLegend
             symbol={activeSymbol}
