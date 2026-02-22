@@ -7,6 +7,8 @@ from sqlalchemy import text
 
 from app.auth.router import router as auth_router
 from app.common.exceptions import register_exception_handlers
+from app.market_data.router import router as market_data_router
+from app.market_data.router import stream_manager
 from app.users.router import router as users_router
 from app.watchlists.router import router as watchlist_router
 from app.config import settings
@@ -17,7 +19,7 @@ logger = structlog.get_logger()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Application lifespan: verify DB connection on startup."""
+    """Application lifespan: verify DB, start stream manager on startup, clean shutdown."""
     try:
         async with engine.begin() as conn:
             await conn.execute(text("SELECT 1"))
@@ -25,7 +27,15 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error("database_connection_failed", error=str(e))
 
+    # Initialize stream manager lifecycle
+    stream_manager._running = True
+    logger.info("stream_manager_started")
+
     yield
+
+    # Clean shutdown of upstream streams
+    await stream_manager.shutdown()
+    logger.info("stream_manager_stopped")
 
     await engine.dispose()
     logger.info("database_engine_disposed")
@@ -53,6 +63,7 @@ register_exception_handlers(app)
 app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(watchlist_router)
+app.include_router(market_data_router)
 
 
 @app.get("/api/v1/health")
