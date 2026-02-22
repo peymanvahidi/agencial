@@ -70,21 +70,27 @@ export function ChartToolbar() {
       {/* ----- Separator ----- */}
       <div className="mx-1 h-4 w-px" style={{ backgroundColor: "#2a2e39" }} />
 
-      {/* ----- Favorite timeframe buttons ----- */}
-      {favoriteTimeframes.map((tf) => (
-        <button
-          key={tf}
-          onClick={() => setTimeframe(tf)}
-          className={cn(
-            "h-7 rounded px-2 text-xs font-medium transition-colors",
-            activeTimeframe === tf
-              ? "bg-brand/20 text-brand"
-              : "text-white/60 hover:bg-white/5 hover:text-white/90",
-          )}
-        >
-          {tf}
-        </button>
-      ))}
+      {/* ----- Favorite timeframe buttons (sorted low → high) ----- */}
+      {[...favoriteTimeframes]
+        .sort(
+          (a, b) =>
+            TIMEFRAMES.findIndex((t) => t.value === a) -
+            TIMEFRAMES.findIndex((t) => t.value === b),
+        )
+        .map((tf) => (
+          <button
+            key={tf}
+            onClick={() => setTimeframe(tf)}
+            className={cn(
+              "h-7 rounded px-2 text-xs font-medium transition-colors",
+              activeTimeframe === tf
+                ? "bg-brand/20 text-brand"
+                : "text-white/60 hover:bg-white/5 hover:text-white/90",
+            )}
+          >
+            {tf}
+          </button>
+        ))}
 
       {/* ----- Timeframe dropdown (all timeframes) ----- */}
       <DropdownMenu>
