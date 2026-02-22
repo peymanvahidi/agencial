@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getMockDataForSymbol } from "@/lib/mock-data";
+import { useMarketDataStore } from "@/stores/market-data-store";
 
 interface WatchlistItemProps {
   symbol: string;
@@ -13,9 +14,14 @@ interface WatchlistItemProps {
 }
 
 /**
- * Format a raw symbol string (e.g., "BTCUSDT") into a display pair (e.g., "BTC/USDT").
+ * Format a raw symbol string for display.
+ * Crypto: "BTCUSDT" -> "BTC/USDT"
+ * Forex: "EUR/USD" -> "EUR/USD" (already formatted with slash)
  */
 function formatSymbol(symbol: string): string {
+  // Forex symbols already contain "/" -- return as-is
+  if (symbol.includes("/")) return symbol;
+  // Crypto symbols ending in USDT
   if (symbol.endsWith("USDT")) {
     return `${symbol.slice(0, -4)}/USDT`;
   }
@@ -38,12 +44,25 @@ export function WatchlistItem({
   onSelect,
   onRemove,
 }: WatchlistItemProps) {
+  // Try live price from WebSocket stream first
+  const liveCandle = useMarketDataStore((s) => s.latestPrices.get(symbol));
+
+  // Compute price data: prefer live, fallback to mock
   const { lastPrice, changePercent } = useMemo(() => {
+    if (liveCandle) {
+      // Use intra-candle change (close vs open) -- best available from a single candle
+      const change =
+        liveCandle.open > 0
+          ? ((liveCandle.close - liveCandle.open) / liveCandle.open) * 100
+          : 0;
+      return { lastPrice: liveCandle.close, changePercent: change };
+    }
+
+    // Fallback to mock data
     const data = getMockDataForSymbol(symbol, "1D");
     if (data.length === 0) return { lastPrice: 0, changePercent: 0 };
 
     const lastCandle = data[data.length - 1];
-    // Find the candle ~24 bars ago (24h on 1D = 1 bar, but we use a wider window for visual interest)
     const compareIndex = Math.max(0, data.length - 2);
     const compareCandle = data[compareIndex];
 
@@ -53,7 +72,7 @@ export function WatchlistItem({
       : 0;
 
     return { lastPrice: last, changePercent: change };
-  }, [symbol]);
+  }, [symbol, liveCandle]);
 
   const isPositive = changePercent >= 0;
 

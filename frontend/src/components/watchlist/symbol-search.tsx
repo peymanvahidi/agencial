@@ -3,7 +3,13 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Search, Plus, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { CRYPTO_SYMBOLS } from "@/types/chart";
+import { CRYPTO_SYMBOLS, FOREX_SYMBOLS } from "@/types/chart";
+
+/** Combined crypto + forex symbol list for unified search */
+const ALL_SYMBOLS = [
+  ...CRYPTO_SYMBOLS.map((s) => ({ symbol: s.symbol, name: s.name })),
+  ...FOREX_SYMBOLS.map((s) => ({ symbol: s.symbol, name: s.name })),
+];
 import { useWatchlistStore } from "@/stores/watchlist-store";
 import { useChartStore } from "@/stores/chart-store";
 
@@ -17,9 +23,9 @@ export function SymbolSearch() {
   const setSymbol = useChartStore((s) => s.setSymbol);
   const activeItems = useWatchlistStore((s) => s.getActiveItems());
 
-  // Filter symbols based on search query
+  // Filter combined crypto + forex symbols based on search query
   const filteredSymbols = query.trim()
-    ? CRYPTO_SYMBOLS.filter(
+    ? ALL_SYMBOLS.filter(
         (s) =>
           s.symbol.toLowerCase().includes(query.toLowerCase()) ||
           s.name.toLowerCase().includes(query.toLowerCase()),
@@ -90,19 +96,19 @@ export function SymbolSearch() {
           ref={dropdownRef}
           className="absolute left-2 right-2 z-50 mt-1 max-h-48 overflow-y-auto rounded-md border border-border bg-popover shadow-lg"
         >
-          {filteredSymbols.map((crypto) => {
-            const isAdded = watchlistSymbols.has(crypto.symbol);
+          {filteredSymbols.map((item) => {
+            const isAdded = watchlistSymbols.has(item.symbol);
             return (
               <button
-                key={crypto.symbol}
+                key={item.symbol}
                 className="flex w-full items-center justify-between px-3 py-1.5 text-xs transition-colors hover:bg-sidebar-accent"
-                onClick={() => handleSelect(crypto.symbol)}
+                onClick={() => handleSelect(item.symbol)}
               >
                 <div className="flex items-center gap-2">
                   <span className="font-medium text-foreground">
-                    {crypto.symbol}
+                    {item.symbol}
                   </span>
-                  <span className="text-muted-foreground">{crypto.name}</span>
+                  <span className="text-muted-foreground">{item.name}</span>
                 </div>
                 {isAdded ? (
                   <Check className="h-3.5 w-3.5 text-green-400" />
