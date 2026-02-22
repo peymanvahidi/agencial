@@ -78,6 +78,46 @@ export const CRYPTO_SYMBOLS: CryptoSymbol[] = [
   { symbol: "LINKUSDT", name: "Chainlink", basePrice: 15, volatility: 0.035 },
 ];
 
+// --- Forex Symbols ---
+
+export interface ForexSymbol {
+  symbol: string;
+  name: string;
+}
+
+export const FOREX_SYMBOLS: ForexSymbol[] = [
+  // Major pairs
+  { symbol: "EUR/USD", name: "Euro / US Dollar" },
+  { symbol: "GBP/USD", name: "British Pound / US Dollar" },
+  { symbol: "USD/JPY", name: "US Dollar / Japanese Yen" },
+  { symbol: "USD/CHF", name: "US Dollar / Swiss Franc" },
+  { symbol: "AUD/USD", name: "Australian Dollar / US Dollar" },
+  { symbol: "NZD/USD", name: "New Zealand Dollar / US Dollar" },
+  { symbol: "USD/CAD", name: "US Dollar / Canadian Dollar" },
+  // Minor pairs
+  { symbol: "EUR/GBP", name: "Euro / British Pound" },
+  { symbol: "EUR/JPY", name: "Euro / Japanese Yen" },
+  { symbol: "GBP/JPY", name: "British Pound / Japanese Yen" },
+  { symbol: "AUD/JPY", name: "Australian Dollar / Japanese Yen" },
+  { symbol: "EUR/AUD", name: "Euro / Australian Dollar" },
+  { symbol: "GBP/AUD", name: "British Pound / Australian Dollar" },
+  { symbol: "EUR/CAD", name: "Euro / Canadian Dollar" },
+  { symbol: "GBP/CAD", name: "British Pound / Canadian Dollar" },
+  { symbol: "AUD/NZD", name: "Australian Dollar / New Zealand Dollar" },
+  { symbol: "EUR/NZD", name: "Euro / New Zealand Dollar" },
+  { symbol: "CHF/JPY", name: "Swiss Franc / Japanese Yen" },
+  { symbol: "CAD/JPY", name: "Canadian Dollar / Japanese Yen" },
+  { symbol: "NZD/JPY", name: "New Zealand Dollar / Japanese Yen" },
+  { symbol: "EUR/CHF", name: "Euro / Swiss Franc" },
+  { symbol: "GBP/CHF", name: "British Pound / Swiss Franc" },
+  { symbol: "AUD/CAD", name: "Australian Dollar / Canadian Dollar" },
+  { symbol: "NZD/CAD", name: "New Zealand Dollar / Canadian Dollar" },
+  { symbol: "GBP/NZD", name: "British Pound / New Zealand Dollar" },
+];
+
+/** Union type for any symbol info (crypto or forex) */
+export type SymbolInfo = CryptoSymbol | ForexSymbol;
+
 // --- Defaults ---
 
 export const DEFAULT_SYMBOL: CryptoSymbol = CRYPTO_SYMBOLS[0];
