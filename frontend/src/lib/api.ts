@@ -24,6 +24,12 @@ async function handleResponse<T>(response: Response): Promise<T> {
     }
     throw new ApiError(response.status, message);
   }
+
+  // 204 No Content (and 205 Reset Content) have no body to parse
+  if (response.status === 204 || response.status === 205) {
+    return undefined as T;
+  }
+
   return response.json();
 }
 
