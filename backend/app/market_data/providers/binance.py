@@ -9,12 +9,21 @@ from app.market_data.schemas import BINANCE_INTERVALS, OHLCVCandle
 
 logger = structlog.get_logger()
 
+# Module-level flag: once we detect geo-blocking on .com, switch to .us
+_use_fallback: bool = False
+
 
 class BinanceProvider(MarketDataProvider):
     """Fetch crypto market data from Binance REST API (no auth required)."""
 
     def __init__(self) -> None:
-        self._base_url = settings.BINANCE_REST_URL
+        self._primary_url = settings.BINANCE_REST_URL
+        self._fallback_url = settings.BINANCE_REST_URL_FALLBACK
+
+    @property
+    def _base_url(self) -> str:
+        global _use_fallback
+        return self._fallback_url if _use_fallback else self._primary_url
 
     async def fetch_historical(
         self,
@@ -28,7 +37,10 @@ class BinanceProvider(MarketDataProvider):
 
         Binance returns arrays: [open_time_ms, open, high, low, close, volume, ...].
         We convert open_time from ms to seconds.
+
+        On HTTP 451 (geo-blocked), automatically retries with the US fallback endpoint.
         """
+        global _use_fallback
         binance_interval = BINANCE_INTERVALS.get(interval, interval)
         params: dict = {
             "symbol": symbol,
@@ -40,14 +52,7 @@ class BinanceProvider(MarketDataProvider):
         if end_time is not None:
             params["endTime"] = end_time * 1000
 
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                f"{self._base_url}/api/v3/klines",
-                params=params,
-                timeout=30.0,
-            )
-            response.raise_for_status()
-            data = response.json()
+        data = await self._fetch_with_fallback("/api/v3/klines", params)
 
         candles: list[OHLCVCandle] = []
         for row in data:
@@ -67,6 +72,7 @@ class BinanceProvider(MarketDataProvider):
             symbol=symbol,
             interval=interval,
             candles=len(candles),
+            endpoint="fallback" if _use_fallback else "primary",
         )
         return candles
 
@@ -75,13 +81,7 @@ class BinanceProvider(MarketDataProvider):
 
         Filters for TRADING status and USDT/BUSD/BTC quote assets.
         """
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                f"{self._base_url}/api/v3/exchangeInfo",
-                timeout=30.0,
-            )
-            response.raise_for_status()
-            data = response.json()
+        data = await self._fetch_with_fallback("/api/v3/exchangeInfo", {})
 
         allowed_quotes = {"USDT", "BUSD", "BTC"}
         symbols: list[str] = []
@@ -95,3 +95,32 @@ class BinanceProvider(MarketDataProvider):
         symbols.sort()
         logger.info("binance_available_symbols", count=len(symbols))
         return symbols
+
+    async def _fetch_with_fallback(self, path: str, params: dict) -> list | dict:
+        """Make a GET request, falling back to the US endpoint on geo-block (451/403)."""
+        global _use_fallback
+
+        async with httpx.AsyncClient() as client:
+            url = f"{self._base_url}{path}"
+            try:
+                response = await client.get(url, params=params, timeout=30.0)
+                response.raise_for_status()
+                return response.json()
+            except httpx.HTTPStatusError as e:
+                status = e.response.status_code
+                # 451 = geo-blocked, 403 = forbidden (some regions)
+                if status in (451, 403) and not _use_fallback:
+                    logger.warning(
+                        "binance_geo_blocked",
+                        status=status,
+                        url=url,
+                        fallback=self._fallback_url,
+                    )
+                    _use_fallback = True
+                    fallback_url = f"{self._fallback_url}{path}"
+                    response = await client.get(
+                        fallback_url, params=params, timeout=30.0
+                    )
+                    response.raise_for_status()
+                    return response.json()
+                raise

@@ -7,8 +7,9 @@ data and available symbol listings.
 
 from typing import Annotated
 
+import httpx
 import structlog
-from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, WebSocketDisconnect
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
@@ -127,13 +128,31 @@ async def get_history(
     Uses cache-first strategy: checks DB cache, fetches from provider on miss.
     """
     service = MarketDataService(db)
-    candles: list[OHLCVCandle] = await service.get_historical_candles(
-        symbol=symbol,
-        interval=interval,
-        start_time=start_time,
-        end_time=end_time,
-        limit=limit,
-    )
+    try:
+        candles: list[OHLCVCandle] = await service.get_historical_candles(
+            symbol=symbol,
+            interval=interval,
+            start_time=start_time,
+            end_time=end_time,
+            limit=limit,
+        )
+    except httpx.HTTPStatusError as e:
+        logger.error(
+            "provider_http_error",
+            symbol=symbol,
+            status=e.response.status_code,
+            url=str(e.request.url),
+        )
+        raise HTTPException(
+            status_code=502,
+            detail=f"Market data provider returned {e.response.status_code}",
+        )
+    except httpx.RequestError as e:
+        logger.error("provider_connection_error", symbol=symbol, error=str(e))
+        raise HTTPException(
+            status_code=502,
+            detail="Could not reach market data provider",
+        )
     return HistoricalResponse(
         symbol=symbol,
         interval=interval,

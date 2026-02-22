@@ -78,14 +78,21 @@ class StreamManager:
         """Connect to Binance WebSocket and relay kline data to subscribers.
 
         Reconnects with exponential backoff (1s initial, 30s max, with jitter)
-        on disconnect or error.
+        on disconnect or error. Falls back to binance.us if .com is geo-blocked.
         """
+        from app.market_data.providers.binance import _use_fallback
+
         key = f"{symbol}@{interval}"
         binance_interval = BINANCE_INTERVALS.get(interval, interval.lower())
-        ws_url = (
-            f"{settings.BINANCE_WS_URL}/ws/"
-            f"{symbol.lower()}@kline_{binance_interval}"
+        stream_path = f"/ws/{symbol.lower()}@kline_{binance_interval}"
+
+        # Pick WS base URL based on whether REST already detected geo-blocking
+        base_ws_url = (
+            settings.BINANCE_WS_URL_FALLBACK if _use_fallback
+            else settings.BINANCE_WS_URL
         )
+        ws_url = f"{base_ws_url}{stream_path}"
+        tried_fallback = _use_fallback
 
         backoff = 1.0
         max_backoff = 30.0
@@ -141,6 +148,17 @@ class StreamManager:
             except Exception as e:
                 if not self._running:
                     return
+                # If first failure on .com, try .us fallback
+                if not tried_fallback:
+                    tried_fallback = True
+                    ws_url = f"{settings.BINANCE_WS_URL_FALLBACK}{stream_path}"
+                    logger.warning(
+                        "binance_ws_geo_blocked_fallback",
+                        key=key,
+                        error=str(e),
+                        fallback_url=ws_url,
+                    )
+                    continue
                 jitter = random.uniform(0, backoff * 0.3)
                 wait = min(backoff + jitter, max_backoff)
                 logger.warning(

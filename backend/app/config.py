@@ -25,7 +25,9 @@ class Settings(BaseSettings):
     # Market data provider settings
     TWELVE_DATA_API_KEY: str = ""
     BINANCE_REST_URL: str = "https://api.binance.com"
+    BINANCE_REST_URL_FALLBACK: str = "https://api.binance.us"
     BINANCE_WS_URL: str = "wss://stream.binance.com:9443"
+    BINANCE_WS_URL_FALLBACK: str = "wss://stream.binance.us:9443"
     TWELVE_DATA_REST_URL: str = "https://api.twelvedata.com"
     TWELVE_DATA_WS_URL: str = "wss://ws.twelvedata.com/v1/quotes/price"
     EMAIL_FROM: str = "noreply@agencial.dev"
