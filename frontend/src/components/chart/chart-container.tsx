@@ -19,7 +19,7 @@ import { ChartToolbar } from "@/components/chart/chart-toolbar";
 import { ChartToolsSidebar } from "@/components/chart/chart-tools-sidebar";
 import { ConnectionBanner } from "@/components/chart/connection-banner";
 import { useChartStore } from "@/stores/chart-store";
-import { useMarketDataConnection } from "@/hooks/use-market-data";
+import { useSharedMarketData } from "@/hooks/use-market-data";
 import { fetchHistoricalCandles } from "@/lib/market-data-api";
 import { getMockDataForSymbol, getIntervalSeconds } from "@/lib/mock-data";
 import type { OHLCVCandle, PriceUpdate } from "@/types/market-data";
@@ -144,7 +144,7 @@ export function ChartContainer() {
   );
 
   const { subscribe, unsubscribe, connectionStatus } =
-    useMarketDataConnection({ onPriceUpdate });
+    useSharedMarketData({ onPriceUpdate, symbols: [activeSymbol] });
 
   // ---------------------------------------------------------------------------
   // Sidebar tool state
