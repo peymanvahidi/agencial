@@ -46,6 +46,7 @@ class SubscribeMessage(BaseModel):
 
 
 class PriceUpdate(BaseModel):
+    type: Literal["price_update"] = "price_update"
     symbol: str
     interval: str
     candle: OHLCVCandle
@@ -53,6 +54,7 @@ class PriceUpdate(BaseModel):
 
 
 class ConnectionStatus(BaseModel):
+    type: Literal["connection_status"] = "connection_status"
     status: Literal["connected", "reconnecting", "error"]
     message: str | None = None
 

@@ -1,5 +1,7 @@
 """Market data service: cache-first historical data fetching."""
 
+import time as _time
+
 import structlog
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,6 +15,19 @@ from app.market_data.providers.twelve_data import TwelveDataProvider
 from app.market_data.schemas import AssetClass, OHLCVCandle, detect_asset_class
 
 logger = structlog.get_logger()
+
+# Interval durations in seconds, used for cache staleness checks.
+_INTERVAL_SECONDS: dict[str, int] = {
+    "1m": 60,
+    "5m": 300,
+    "15m": 900,
+    "30m": 1800,
+    "1H": 3600,
+    "4H": 14400,
+    "1D": 86400,
+    "1W": 604800,
+    "1M": 2592000,
+}
 
 
 class MarketDataService:
@@ -45,17 +60,20 @@ class MarketDataService:
         """Fetch historical candles with cache-first strategy.
 
         1. Query ohlcv_cache for matching symbol + interval in time range
-        2. If enough cached rows exist, return them
+        2. If enough cached rows exist AND they are fresh enough, return them
         3. Otherwise fetch from provider, cache the result, and return
+
+        When no time range is provided (initial chart load), the query fetches
+        the *newest* cached rows (ORDER BY DESC) to avoid returning stale data
+        from the bottom of the cache.
         """
+        # Determine whether this is a "latest data" request (no time bounds).
+        is_latest_request = start_time is None and end_time is None
+
         # Step 1: Try cache
-        query = (
-            select(OHLCVCache)
-            .where(
-                OHLCVCache.symbol == symbol,
-                OHLCVCache.interval == interval,
-            )
-            .order_by(OHLCVCache.open_time.asc())
+        query = select(OHLCVCache).where(
+            OHLCVCache.symbol == symbol,
+            OHLCVCache.interval == interval,
         )
 
         if start_time is not None:
@@ -63,13 +81,43 @@ class MarketDataService:
         if end_time is not None:
             query = query.where(OHLCVCache.open_time <= end_time)
 
-        query = query.limit(limit)
+        if is_latest_request:
+            # Fetch the newest rows first so LIMIT grabs the tail, not the head.
+            query = query.order_by(OHLCVCache.open_time.desc()).limit(limit)
+        else:
+            query = query.order_by(OHLCVCache.open_time.asc()).limit(limit)
 
         result = await self.db.execute(query)
-        cached_rows = result.scalars().all()
+        cached_rows = list(result.scalars().all())
 
-        # Step 2: Return cached data if we have enough
+        # When fetched DESC we need to reverse back to chronological order.
+        if is_latest_request and cached_rows:
+            cached_rows.reverse()
+
+        # Step 2: Check cache validity
+        cache_is_valid = False
         if cached_rows and len(cached_rows) >= limit:
+            if is_latest_request:
+                # For "latest" requests, verify the newest cached candle is
+                # reasonably recent (within 2 interval periods of now).
+                interval_sec = _INTERVAL_SECONDS.get(interval, 60)
+                newest_time = cached_rows[-1].open_time
+                staleness = int(_time.time()) - newest_time
+                if staleness <= interval_sec * 2:
+                    cache_is_valid = True
+                else:
+                    logger.info(
+                        "cache_stale",
+                        symbol=symbol,
+                        interval=interval,
+                        newest_time=newest_time,
+                        staleness_sec=staleness,
+                    )
+            else:
+                # For ranged requests (infinite scroll), row count is sufficient.
+                cache_is_valid = True
+
+        if cache_is_valid:
             logger.info(
                 "cache_hit",
                 symbol=symbol,
@@ -144,8 +192,15 @@ class MarketDataService:
         ]
 
         stmt = pg_insert(OHLCVCache).values(values)
-        stmt = stmt.on_conflict_do_nothing(
+        stmt = stmt.on_conflict_do_update(
             constraint="uq_ohlcv_candle",
+            set_={
+                "open": stmt.excluded.open,
+                "high": stmt.excluded.high,
+                "low": stmt.excluded.low,
+                "close": stmt.excluded.close,
+                "volume": stmt.excluded.volume,
+            },
         )
 
         await self.db.execute(stmt)

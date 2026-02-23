@@ -74,8 +74,7 @@ async def websocket_endpoint(ws: WebSocket) -> None:
 
                 await ws.send_json(
                     {
-                        "type": "subscription_confirm",
-                        "action": "subscribed",
+                        "type": "subscribed",
                         "symbol": msg.symbol,
                         "interval": msg.interval,
                     }
@@ -90,8 +89,7 @@ async def websocket_endpoint(ws: WebSocket) -> None:
 
                 await ws.send_json(
                     {
-                        "type": "subscription_confirm",
-                        "action": "unsubscribed",
+                        "type": "unsubscribed",
                         "symbol": msg.symbol,
                         "interval": msg.interval,
                     }
